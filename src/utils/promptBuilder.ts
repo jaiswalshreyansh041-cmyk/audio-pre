@@ -19,9 +19,10 @@ export function buildPrompt(
   prevTurn: AnnotationRow | null,
   features: FeatureToggles,
 ): { system: string; user: string } {
+  const gapMs = prevTurn ? Math.round((turn.startTime - prevTurn.endTime) * 1000) : null;
   const prevContext = prevTurn
-    ? `Previous turn — Emotion: ${prevTurn.emotion}, Intent: ${prevTurn.intent}, End time: ${prevTurn.endTime.toFixed(3)}s`
-    : 'This is the first turn.';
+    ? `Previous turn — Speaker: ${prevTurn.speaker}, Emotion: ${prevTurn.emotion}, Intent: ${prevTurn.intent}, End time: ${prevTurn.endTime.toFixed(3)}s, Gap to this turn: ${gapMs}ms`
+    : 'This is the first turn (no gap).';
 
   const activeFeatures = [
     features.emotion && 'emotion',
@@ -54,13 +55,13 @@ export function buildPrompt(
       ? `  "intent": "<one of: Question | Request | Statement | Elaboration | Proposal | Agreement | Backchannel>",\n`
       : '') +
     (features.speakingRate
-      ? `  "speaking_rate": "<one of: Slow | Normal | Fast — use measured WPM above as primary signal>",\n`
+      ? `  "speaking_rate": "<one of: Slow | Normal | Fast — matrix: <110 WPM=Slow, 110-160=Normal, >160=Fast; use measured WPM above as primary signal>",\n`
       : '') +
     (features.disfluency
       ? `  "disfluency": { "filler": bool, "false_start": bool, "self_repair": bool, "repetition": bool, "long_pause": bool, "none": bool },\n`
       : '') +
     (features.turnTaking
-      ? `  "turn_taking_event": "<one of: Normal transition | Latch | Overlap | Interruption | Long gap>",\n`
+      ? `  "turn_taking_event": "<one of: Overlap | Interruption | Latch | Normal transition | Long gap — matrix: gap<0ms→Overlap(speaker finishes)/Interruption(forced stop), 0-200ms→Latch, 200-1000ms→Normal transition, >1000ms→Long gap; first turn=Normal transition>",\n`
       : '') +
     (features.emphasis
       ? `  "emphasized_words": [<list of prosodically stressed word strings>],\n`

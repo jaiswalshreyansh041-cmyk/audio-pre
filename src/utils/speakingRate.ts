@@ -5,13 +5,10 @@
  * and turn duration. For Hindi, each whitespace-delimited token is one
  * "word" (Devanagari script is naturally space-delimited).
  *
- * Classification thresholds (calibrated for Hindi conversational speech):
- *   Slow   : WPM < 90
- *   Normal : 90 ≤ WPM ≤ 160
+ * Classification thresholds:
+ *   Slow   : WPM < 110
+ *   Normal : 110 ≤ WPM ≤ 160
  *   Fast   : WPM > 160
- *
- * These align with published Hindi speech rate studies (approx 3–5.5
- * syllables/sec maps to 80–160 WPM for typical Hindi word length).
  */
 
 export interface SpeakingRateResult {
@@ -21,7 +18,7 @@ export interface SpeakingRateResult {
   label: 'Slow' | 'Normal' | 'Fast';
 }
 
-const SLOW_THRESHOLD   = 90;   // WPM below this → Slow
+const SLOW_THRESHOLD   = 110;  // WPM below this → Slow
 const FAST_THRESHOLD   = 160;  // WPM above this → Fast
 
 /**
