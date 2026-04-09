@@ -6,6 +6,7 @@
  */
 
 import { AnnotationRow, FeatureToggles } from '../types';
+import { computeSpeakingRate } from './speakingRate';
 
 export const SYSTEM_PROMPT =
   `You are a prosodic annotation expert for Hindi conversational speech. ` +
@@ -33,10 +34,15 @@ export function buildPrompt(
     .filter(Boolean)
     .join(', ');
 
+  const rateHint = features.speakingRate
+    ? computeSpeakingRate(transcript || turn.originalUtterance, turn.startTime, turn.endTime)
+    : null;
+
   const user =
     `Audio segment: Turn ${turn.turnNo}, Speaker: ${turn.speaker}\n` +
     `Time: ${turn.startTime.toFixed(3)}s → ${turn.endTime.toFixed(3)}s\n` +
     `Utterance text (for reference): ${transcript || turn.originalUtterance}\n` +
+    (rateHint ? `Measured speaking rate: ${rateHint.wpm} WPM (${rateHint.wordCount} words in ${rateHint.durationSec.toFixed(1)} s) — computed label: ${rateHint.label}\n` : '') +
     `${prevContext}\n\n` +
     `Evaluate the following features: ${activeFeatures}\n\n` +
     `Return JSON with exactly these keys (omit keys for inactive features):\n` +
@@ -48,7 +54,7 @@ export function buildPrompt(
       ? `  "intent": "<one of: Question | Request | Statement | Elaboration | Proposal | Agreement | Backchannel>",\n`
       : '') +
     (features.speakingRate
-      ? `  "speaking_rate": "<one of: Slow | Normal | Fast>",\n`
+      ? `  "speaking_rate": "<one of: Slow | Normal | Fast — use measured WPM above as primary signal>",\n`
       : '') +
     (features.disfluency
       ? `  "disfluency": { "filler": bool, "false_start": bool, "self_repair": bool, "repetition": bool, "long_pause": bool, "none": bool },\n`

@@ -10,6 +10,7 @@ import {
 import { Download, RotateCcw, CheckCircle2, XCircle, Minus } from 'lucide-react';
 import { OverallMetrics, TurnResult, FeatureToggles } from '../types';
 import { exportResultsCSV } from '../utils/csvParser';
+import { computeSpeakingRate } from '../utils/speakingRate';
 
 interface Props {
   metrics: OverallMetrics;
@@ -20,15 +21,6 @@ interface Props {
 }
 
 type TabId = 'breakdown' | 'errors' | 'timestamps';
-
-const FEATURE_COLORS: Record<string, string> = {
-  emotion: '#f59e0b',
-  intent: '#6366f1',
-  speakingRate: '#10b981',
-  disfluency: '#ec4899',
-  turnTaking: '#3b82f6',
-  emphasis: '#8b5cf6',
-};
 
 /* ─── Helpers ─── */
 
@@ -208,7 +200,6 @@ function ConfusionMatrix({
               {labels.map(pred => {
                 const n = matrix[gt]?.[pred] || 0;
                 const isDiag = gt === pred;
-                const intensity = Math.round((n / max) * 80);
                 const bg = isDiag
                   ? `rgba(16,185,129,${(n / max) * 0.6 + 0.05})`
                   : n > 0 ? `rgba(239,68,68,${(n / max) * 0.5 + 0.03})` : 'transparent';
@@ -303,11 +294,6 @@ export default function ResultsPage({ metrics, results, features, modelName, onR
     accuracy: parseFloat(f.accuracy.toFixed(1)),
     f1: parseFloat((f.f1 * 100).toFixed(1)),
     feature: f.feature,
-  }));
-
-  const radarData = metrics.perFeature.map(f => ({
-    feature: f.label.replace(' Detection', '').replace(' Classification', ''),
-    value: f.accuracy,
   }));
 
   const handleExport = () => {
@@ -507,7 +493,11 @@ function getGTVal(gt: TurnResult['groundTruth'], feature: string): string {
   switch (feature) {
     case 'emotion': return gt.emotion;
     case 'intent': return gt.intent;
-    case 'speakingRate': return gt.speakingRate;
+    case 'speakingRate': {
+      const r = computeSpeakingRate(gt.originalUtterance, gt.startTime, gt.endTime);
+      const wpmSuffix = r.durationSec > 0.2 ? ` (${r.wpm} WPM)` : '';
+      return `${gt.speakingRate}${wpmSuffix}`;
+    }
     case 'disfluency': {
       const d = gt.disfluency;
       const active = [
