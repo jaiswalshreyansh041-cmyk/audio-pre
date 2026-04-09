@@ -156,7 +156,14 @@ export function computeOverallMetrics(
     totalConfidence += pred.confidence || 0;
     confidenceCount++;
 
-    // Timestamp alignment
+    // Timestamp alignment — compute from pred timestamps if not already set by model
+    if (pred.boundaryError === undefined &&
+        pred.startTime !== undefined && pred.endTime !== undefined &&
+        (gt.startTime > 0 || gt.endTime > 0)) {
+      const startErrMs = Math.abs((pred.startTime - gt.startTime) * 1000);
+      const endErrMs   = Math.abs((pred.endTime   - gt.endTime)   * 1000);
+      pred.boundaryError = (startErrMs + endErrMs) / 2;
+    }
     if (pred.boundaryError !== undefined) {
       totalAlignTurns++;
       boundaryErrorSum += pred.boundaryError;

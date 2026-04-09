@@ -237,7 +237,7 @@ function TimestampTab({ results, metrics }: { results: TurnResult[]; metrics: Ov
         <table className="w-full text-xs">
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              {['Turn', 'Speaker', 'GT Start–End', 'Duration', 'Boundary Error', 'Status'].map(col => (
+              {['Turn', 'Speaker', 'GT Start–End', 'Pred Start–End', 'Duration', 'Boundary Error', 'Status'].map(col => (
                 <th key={col} className="px-3 py-2.5 text-left font-medium"
                   style={{ color: 'rgba(255,255,255,0.45)' }}>{col}</th>
               ))}
@@ -255,6 +255,11 @@ function TimestampTab({ results, metrics }: { results: TurnResult[]; metrics: Ov
                   <td className="px-3 py-2" style={{ color: 'rgba(255,255,255,0.6)' }}>{gt.speaker}</td>
                   <td className="px-3 py-2 font-mono" style={{ color: 'rgba(255,255,255,0.45)' }}>
                     {gt.startTime.toFixed(2)}s – {gt.endTime.toFixed(2)}s
+                  </td>
+                  <td className="px-3 py-2 font-mono" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    {r.prediction?.startTime !== undefined && r.prediction?.endTime !== undefined
+                      ? `${r.prediction.startTime.toFixed(2)}s – ${r.prediction.endTime.toFixed(2)}s`
+                      : <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>}
                   </td>
                   <td className="px-3 py-2 font-mono" style={{ color: 'rgba(255,255,255,0.45)' }}>
                     {dur.toFixed(1)}s
