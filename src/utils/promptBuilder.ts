@@ -55,13 +55,13 @@ export function buildPrompt(
       ? `  "intent": "<one of: Question | Request | Statement | Elaboration | Proposal | Agreement | Backchannel>",\n`
       : '') +
     (features.speakingRate
-      ? `  "speaking_rate": "<one of: Slow | Normal | Fast — matrix: <110 WPM=Slow, 110-160=Normal, >160=Fast; use measured WPM above as primary signal>",\n`
+      ? `  "speaking_rate": "<one of: Slow | Normal | Fast — WPM=(word_count/duration_seconds)×60; matrix: <120=Slow, 120-170=Normal, >170=Fast; use measured WPM above as primary signal>",\n`
       : '') +
     (features.disfluency
       ? `  "disfluency": { "filler": bool, "false_start": bool, "self_repair": bool, "repetition": bool, "long_pause": bool, "none": bool },\n`
       : '') +
     (features.turnTaking
-      ? `  "turn_taking_event": "<one of: Overlap | Interruption | Latch | Normal transition | Long gap — matrix: gap<0ms→Overlap(speaker finishes)/Interruption(forced stop), 0-200ms→Latch, 200-1000ms→Normal transition, >1000ms→Long gap; first turn=Normal transition>",\n`
+      ? `  "turn_taking_event": "<one of: Latch | Normal transition | Overlap | Interruption | Long gap — matrix: gap<0s AND prev speaker finishes=Overlap; gap<0s AND prev speaker cut off=Interruption; 0-0.25s=Latch; 0.25-1.25s=Normal transition; ≥1.25s=Long gap; first turn always=Normal transition>",\n`
       : '') +
     (features.emphasis
       ? `  "emphasized_words": [<list of prosodically stressed word strings>],\n`

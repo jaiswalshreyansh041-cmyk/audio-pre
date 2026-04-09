@@ -6,9 +6,9 @@
  * "word" (Devanagari script is naturally space-delimited).
  *
  * Classification thresholds:
- *   Slow   : WPM < 110
- *   Normal : 110 ≤ WPM ≤ 160
- *   Fast   : WPM > 160
+ *   Slow   : WPM < 120
+ *   Normal : 120 ≤ WPM ≤ 170
+ *   Fast   : WPM > 170
  */
 
 export interface SpeakingRateResult {
@@ -18,8 +18,8 @@ export interface SpeakingRateResult {
   label: 'Slow' | 'Normal' | 'Fast';
 }
 
-const SLOW_THRESHOLD   = 110;  // WPM below this → Slow
-const FAST_THRESHOLD   = 160;  // WPM above this → Fast
+const SLOW_THRESHOLD   = 120;  // WPM below this → Slow
+const FAST_THRESHOLD   = 170;  // WPM above this → Fast
 
 /**
  * Count words in a Hindi/English/mixed utterance.

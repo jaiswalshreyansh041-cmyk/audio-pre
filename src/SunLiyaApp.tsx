@@ -655,13 +655,13 @@ RULES:
 turn_taking classification — use EXACTLY one of: latch | normal_transition | overlap | interruption | long_gap
   • overlap        gap_from_previous_seconds < 0 AND the previous speaker completes (or nearly completes) their thought → next speaker starts while previous is still talking, no intent to cut off; signals agreement / enthusiasm / anticipation
   • interruption   gap_from_previous_seconds < 0 AND the previous speaker is forced to stop mid-point → deliberate cut-off, original speaker does not finish; signals dominance, urgency, disagreement
-  • latch          gap_from_previous_seconds 0 – 0.20s  → response begins almost instantly, turns feel seamlessly glued; listener anticipated the ending; common in fast-paced or familiar exchanges
-  • normal_transition  gap 0.20 – 1.0s               → short comfortable pause, most natural pacing, enough time to process and respond
-  • long_gap       gap_from_previous_seconds ≥ 1.0s   → prolonged silence; signals hesitation, confusion, careful thinking, emotional processing, or disengagement
+  • latch          gap_from_previous_seconds 0 – 0.25s  → response begins almost instantly, turns feel seamlessly glued; listener anticipated the ending; common in fast-paced or familiar exchanges
+  • normal_transition  gap 0.25 – 1.25s              → short comfortable pause, most natural pacing, enough time to process and respond
+  • long_gap       gap_from_previous_seconds ≥ 1.25s  → prolonged uncomfortable silence; signals hesitation, confusion, careful thinking, emotional processing, or disengagement
 
 - First turn: turn_taking = "normal_transition", gap_from_previous_seconds = 0.0
 - For overlap vs interruption: if the prior speaker's text ends with "—" (cut off) → interruption; otherwise → overlap
-- WPM = (word_count / duration_seconds) × 60: <110 → slow, 110–160 → normal, >160 → fast
+- WPM = (word_count / duration_seconds) × 60: <120 → slow, 120–170 → normal, >170 → fast
 - disfluency: pick ALL that apply; use ["none"] if clean
 - emphasis: list words that carry notable stress or communicative weight in the turn. Since only text is available (no audio), infer stress from textual and semantic signals:
     • Intensifiers / degree adverbs (e.g. "very", "extremely", "খুবই", "অনেক", "বিলকুল", "बिल्कुल")
