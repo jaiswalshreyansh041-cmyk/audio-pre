@@ -10,12 +10,18 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // API route to provide the runtime Gemini API key to the frontend
-  app.get("/api/config", (req, res) => {
-    res.json({ 
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY || process.env.API_KEY,
-      TRANSCRIPT_API_KEY: process.env.TRANSCRIPT_API_KEY,
-      JSON_API_KEY: process.env.JSON_API_KEY
+  // Single endpoint — all API keys served from .env
+  app.get("/api/config", (_req, res) => {
+    const gemini = process.env.GEMINI_API_KEY || process.env.API_KEY || "";
+    res.json({
+      // Gemini (SunLiya.AI + Evaluator)
+      GEMINI_API_KEY:    gemini,
+      TRANSCRIPT_API_KEY: gemini,   // SunLiya.AI transcript calls
+      JSON_API_KEY:       gemini,   // SunLiya.AI analysis calls
+      // OpenAI — Whisper + GPT-4o
+      OPENAI_API_KEY:    process.env.OPENAI_API_KEY  || "",
+      // Sarvam AI
+      SARVAM_API_KEY:    process.env.SARVAM_API_KEY  || "",
     });
   });
 
