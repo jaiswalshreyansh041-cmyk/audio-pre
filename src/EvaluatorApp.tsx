@@ -95,16 +95,13 @@ export default function EvaluatorApp() {
 
   const abortRef = useRef(false);
 
-  /* ─── Fetch API keys on mount ─── */
+  /* ─── Load API keys from Vite env (works in dev + Vercel production) ─── */
   useEffect(() => {
-    fetch('/api/config')
-      .then(r => r.json())
-      .then(data => setConfig({
-        geminiApiKey: data.GEMINI_API_KEY || '',
-        openaiApiKey: data.OPENAI_API_KEY || '',
-        sarvamApiKey: data.SARVAM_API_KEY || '',
-      }))
-      .catch(() => {});
+    setConfig({
+      geminiApiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
+      openaiApiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
+      sarvamApiKey: import.meta.env.VITE_SARVAM_API_KEY || '',
+    });
   }, []);
 
   /* ─── Step helpers ─── */

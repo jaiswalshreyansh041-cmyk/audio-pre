@@ -308,15 +308,10 @@ export default function SunLiyaApp() {
     setAiJsonResult(null);
 
     try {
-      // Fetch runtime API key from backend
-      const configRes = await fetch('/api/config');
-      if (!configRes.ok) throw new Error("Failed to fetch API configuration");
-      const config = await configRes.json();
-      
-      const apiKey = config.GEMINI_API_KEY;
-      const transcriptApiKey = config.TRANSCRIPT_API_KEY || apiKey; // Fallback to primary if not set
-      const jsonApiKey = config.JSON_API_KEY || apiKey; // Fallback to primary if not set
-      if (!apiKey && !jsonApiKey) {
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+      const transcriptApiKey = apiKey;
+      const jsonApiKey = apiKey;
+      if (!apiKey) {
         throw new Error("API key is missing from environment variables.");
       }
 
