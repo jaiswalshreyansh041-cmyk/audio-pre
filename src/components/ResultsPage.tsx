@@ -331,6 +331,95 @@ export default function ResultsPage({ metrics, results, features, modelName, onR
     URL.revokeObjectURL(url);
   };
 
+  /** Export results as SunLiya.AI-compatible JSON format */
+  const handleExportJSON = () => {
+    // Collect unique speakers
+    const speakers = [...new Set(results.map(r => r.groundTruth.speaker).filter(Boolean))];
+
+    const transcript_by_turn = results.map(r => {
+      const gt = r.groundTruth;
+      const pred = r.prediction;
+
+      // Format seconds → "MM:SS"
+      const fmtTime = (s: number) => {
+        const m = Math.floor(s / 60).toString().padStart(2, '0');
+        const sec = Math.floor(s % 60).toString().padStart(2, '0');
+        return `${m}:${sec}`;
+      };
+
+      // Build disfluency array from prediction or ground truth
+      const disfluencyArr = (() => {
+        const d = pred?.disfluency ?? gt.disfluency;
+        if (!d) return ['none'];
+        const active = [
+          d.filler && 'filler',
+          d.falseStart && 'false_start',
+          d.selfRepair && 'self_repair',
+          d.repetition && 'repetition',
+          d.longPause && 'long_pause',
+        ].filter(Boolean) as string[];
+        return active.length > 0 ? active : ['none'];
+      })();
+
+      return {
+        turn_id: gt.turnNo,
+        speaker: gt.speaker,
+        start_time: fmtTime(gt.startTime),
+        end_time: fmtTime(gt.endTime),
+        text: gt.originalUtterance,
+        annotations: {
+          // Use prediction if available, else fall back to ground truth
+          emotion: (pred?.emotion ?? gt.emotion ?? '').toLowerCase(),
+          disfluency: disfluencyArr,
+          speaking_rate: (pred?.speakingRate ?? gt.speakingRate ?? '').toLowerCase(),
+          turn_taking: (pred?.turnTakingEvent ?? gt.turnTakingEvent ?? '').toLowerCase().replace(/ /g, '_'),
+          emphasis: pred?.emphasizedWords ?? gt.emphasis ?? [],
+          intent: (pred?.intent ?? gt.intent ?? '').toLowerCase(),
+        },
+        evaluation: {
+          emotion_match:      features.emotion      ? (r.matches['emotion']      ?? null) : null,
+          intent_match:       features.intent       ? (r.matches['intent']       ?? null) : null,
+          speaking_rate_match:features.speakingRate ? (r.matches['speakingRate'] ?? null) : null,
+          disfluency_f1:      features.disfluency   ? (r.featureF1s['disfluency'] ?? null) : null,
+          turn_taking_match:  features.turnTaking   ? (r.matches['turnTaking']   ?? null) : null,
+          emphasis_f1:        features.emphasis     ? (r.featureF1s['emphasis']  ?? null) : null,
+          confidence: pred?.confidence ?? null,
+        },
+      };
+    });
+
+    const output = {
+      meta: {
+        model: modelName,
+        exported_at: new Date().toISOString(),
+        overall_accuracy: parseFloat(metrics.overallAccuracy.toFixed(2)),
+        avg_confidence: parseFloat(metrics.avgConfidence.toFixed(3)),
+        total_turns: metrics.totalTurns,
+      },
+      per_feature_metrics: Object.fromEntries(
+        metrics.perFeature.map(f => [f.feature, {
+          accuracy: parseFloat(f.accuracy.toFixed(2)),
+          precision: parseFloat(f.precision.toFixed(3)),
+          recall: parseFloat(f.recall.toFixed(3)),
+          f1: parseFloat(f.f1.toFixed(3)),
+        }])
+      ),
+      ai_analysis: {
+        detected_language: 'Hindi',
+        speakers,
+        transcript_by_turn,
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `eval_results_${modelName}_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const TABS: { id: TabId; label: string }[] = [
     { id: 'breakdown', label: 'Per-turn breakdown' },
     { id: 'errors', label: 'Error analysis' },
@@ -351,6 +440,11 @@ export default function ResultsPage({ metrics, results, features, modelName, onR
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
             style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)' }}>
             <Download size={12} /> Export CSV
+          </button>
+          <button onClick={handleExportJSON}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+            style={{ background: 'rgba(16,185,129,0.12)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.3)' }}>
+            <Download size={12} /> Export JSON
           </button>
           <button onClick={onReset}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
